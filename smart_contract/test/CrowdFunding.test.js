@@ -1,5 +1,6 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
+const { time } = require("@nomicfoundation/hardhat-toolbox/network-helpers");
 
 describe("CrowdFunding Contract", function () {
     let CrowdFunding;
@@ -108,4 +109,45 @@ describe("CrowdFunding Contract", function () {
             await expect(crowdFunding.withdrawFunds(0)).to.be.revertedWith("Target non raggiunto");
         });
     });
+
+
+
+    describe("Rimborsi (Refunds)", function () {
+    beforeEach(async function () {
+        // Creiamo una campagna con target 10 ETH e scadenza tra 1 ora (3600 sec)
+        const target = ethers.parseEther("10");
+        const currentTimestamp = await time.latest();
+        const deadline = currentTimestamp + 3600; 
+        
+        await crowdFunding.createCampaign(owner.address, "Campagna Fallimentare", "Desc", target, deadline, "img");
+        
+        // Doniamo solo 1 ETH < target
+        await crowdFunding.connect(addr1).donateToCampaign(0, { value: ethers.parseEther("1") });
+    });
+
+    it("Non dovrebbe permettere il rimborso se la campagna non e' ancora scaduta", async function () {
+        await expect(
+            crowdFunding.connect(addr1).refund(0)
+        ).to.be.revertedWith("La campagna non e' ancora chiusa");
+    });
+
+    it("Dovrebbe permettere il rimborso se scaduta e target non raggiunto", async function () {
+        // Avanziamo di 2 ore (3600 * 2)
+        await time.increase(7200);
+
+        // Verifichiamo che il saldo del contratto diminuisca
+        await expect(
+            crowdFunding.connect(addr1).refund(0)
+        ).to.changeEtherBalances(
+            [crowdFunding, addr1],
+            [ethers.parseEther("-1"), ethers.parseEther("1")] 
+            // addr1 riceverà 1 ETH meno il costo del gas della transazione, 
+            // ma changeEtherBalances gestisce la logica del trasferimento netto
+        );
+
+        // Verifichiamo che il mapping sia azzerato per evitare doppi rimborsi
+        const donatedAmount = await crowdFunding.campaignDonations(0, addr1.address);
+        expect(donatedAmount).to.equal(0);
+    });
+  });
 });
