@@ -62,6 +62,21 @@ contract CrowdFunding {
         return (campaigns[_id].donators, campaigns[_id].donations);
     }
 
+    function withdrawFunds(uint256 _id) public {
+        Campaign storage campaign = campaigns[_id];
+
+        require(msg.sender == campaign.owner, "Solo il creatore puo' prelevare");
+        require(campaign.amountCollected >= campaign.target, "Target non raggiunto");
+        require(campaign.amountCollected > 0, "Nessun fondo da prelevare");
+
+        //Aggiorno stato prima di inviare soldi per evitare reentrancy attack
+        uint256 amountToWithdraw = campaign.amountCollected;
+        campaign.amountCollected = 0;
+
+        (bool sent, ) = payable(campaign.owner).call{value: amountToWithdraw}("");
+        require(sent, "Trasferimento fallito");
+    }
+
     constructor() {
         // Inizializzazione
     }

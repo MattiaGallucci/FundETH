@@ -82,4 +82,30 @@ describe("CrowdFunding Contract", function () {
             const pastDate = Math.floor(Date.now() / 1000) - 1000;
         });
     });
+
+
+
+    describe("Prelievi", function () {
+        beforeEach(async function () {
+            const target = ethers.parseEther("1");
+            const deadline = Math.floor(Date.now() / 1000) + 1000;
+            await crowdFunding.createCampaign(owner.address, "Campagna 2", "Desc", target, deadline, "img");
+        });
+
+        it("Dovrebe pernettere al creatore di prelevare se target raggiunto", async function () {
+            await crowdFunding.connect(addr1).donateToCampaign(0, { value: ethers.parseEther("1") });
+        
+            await crowdFunding.withdrawFunds(0);
+
+            const campaign = await crowdFunding.campaigns(0);
+            expect(campaign.amountCollected).to.equal(0);
+        });
+
+        it("Dovrebbe impedire il prelievo se il target non e' raggiunto", async function () {
+            // Doniamo solo 0.5 ETH (metà del target)
+            await crowdFunding.connect(addr1).donateToCampaign(0, { value: ethers.parseEther("0.5") });
+
+            await expect(crowdFunding.withdrawFunds(0)).to.be.revertedWith("Target non raggiunto");
+        });
+    });
 });
