@@ -84,14 +84,34 @@ export const Web3Provider = ({ children }) => {
         if(contractAddress) fetchCampaigns();
     }, [currentAccount]);
 
+    const donate = async (pId, amount) => {
+        setIsLoading(true);
+        try {
+            const contract = getEthereumContract();
+
+            const amountInWei = ethers.utils.parseEther(amount);
+
+            const transaction = await contract.donateToCampaign(pId, { value: amountInWei });
+
+            await transaction.wait();
+            console.log("Donazione effettuata con successo", transaction);
+
+            fetchCampaigns();
+        } catch (error) {
+            console.log("Errore durante la donazione:", error);
+            alert("Errore durante la donazione. Vedi console per dettagli.");
+        }
+        setIsLoading(false);
+    }
+
     return (
         <Web3Context.Provider value={{ 
             connectWallet, 
             currentAccount, 
-            getEthereumContract,
-            campaigns,
-            fetchCampaigns,
-            isLoading 
+            campaigns, 
+            fetchCampaigns, 
+            isLoading,
+            donate
         }}>
             {children}
         </Web3Context.Provider>
