@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { Web3Context } from './context/Web3Context';
 import axios from 'axios';
+import { ethers } from 'ethers';
 
 const CreateCampaign = () => {
     const { getEthereumContract, currentAccount } = useContext(Web3Context);
@@ -98,53 +99,42 @@ const CreateCampaign = () => {
     };
 
     return (
-    <div style={{ padding: '20px', maxWidth: '500px', margin: '0 auto' }}>
-      <h2>Lancia una Campagna</h2>
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+    <div className="form-card">
+      <h2 style={{marginTop: 0}}>🚀 Lancia una nuova campagna</h2>
+      <form onSubmit={handleSubmit}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            <div className="input-group">
+                <label className="text-muted">Titolo</label>
+                <input className="form-input" placeholder="Titolo progetto" onChange={(e) => handleFormFieldChange('title', e)} required />
+            </div>
+            <div className="input-group">
+                <label>Target (ETH)</label>
+                <input className="form-input" type="number" step="0.01" placeholder="Es. 1.5" onChange={(e) => handleFormFieldChange('target', e)} required />
+            </div>
+        </div>
         
-        <input 
-          placeholder="Titolo Campagna" 
-          onChange={(e) => handleFormFieldChange('title', e)}
-          required
-        />
-        
-        <textarea 
-          placeholder="Raccontaci la tua storia..." 
-          onChange={(e) => handleFormFieldChange('description', e)}
-          required
-        />
-        
-        <input 
-          type="number" 
-          step="0.01" 
-          placeholder="Obiettivo in ETH (es. 0.5)" 
-          onChange={(e) => handleFormFieldChange('target', e)}
-          required
-        />
-        
-        <label>Scadenza:</label>
-        <input 
-          type="date" 
-          onChange={(e) => handleFormFieldChange('deadline', e)}
-          required
-        />
+        <div className="input-group">
+            <label>Descrizione</label>
+            <textarea className="form-textarea" rows="3" placeholder="Racconta la tua storia..." onChange={(e) => handleFormFieldChange('description', e)} required />
+        </div>
 
-        <label>Immagine:</label>
-        <input 
-          type="file" 
-          accept="image/*"
-          onChange={handleImageChange}
-          required
-        />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            <div className="input-group">
+                <label>Scadenza</label>
+                <input className="form-input" type="date" onChange={(e) => handleFormFieldChange('deadline', e)} required />
+            </div>
+            <div className="input-group">
+                <label>Copertina</label>
+                <input className="form-input" type="file" accept="image/*" onChange={handleImageChange} required />
+            </div>
+        </div>
 
-        <button type="submit" disabled={isLoading} style={{ marginTop: '10px', padding: '10px' }}>
-            {isLoading ? "Creazione in corso..." : "Crea Campagna"}
+        <button type="submit" className="btn btn-primary" style={{marginTop: '1rem'}} disabled={isLoading}>
+            {isLoading ? "Creazione in corso..." : "Pubblica Campagna"}
         </button>
       </form>
     </div>
   );
 }
-
-import { ethers } from 'ethers';
 
 export default CreateCampaign;
