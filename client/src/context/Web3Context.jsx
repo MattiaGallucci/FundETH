@@ -29,32 +29,29 @@ export const Web3Provider = ({ children }) => {
     // Funzione per connettere il wallet
     const connectWallet = async () => {
         try {
-            if (!ethereum) return alert("Per favore installa MetaMask.");
-
-            const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+            if (!ethereum) return alert("Installa MetaMask");
+            const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
             setCurrentAccount(accounts[0]);
-        } catch (error) {
-            console.log(error);
-            throw new Error("Nessun oggetto ethereum trovato");
-        }
+            localStorage.setItem('connected', 'true');
+        } catch (error) { console.log(error); }
     }
+
+    const disconnectWallet = () => {
+        setCurrentAccount("");
+        localStorage.removeItem('connected');
+    };
 
     // Funzione per controllare se il wallet è già connesso al caricamento della pagina
     const checkIfWalletIsConnected = async () => {
+        if(!localStorage.getItem('connected')) return; 
+
         try {
-            if (!ethereum) return alert("Per favore installa MetaMask.");
-
-            const accounts = await ethereum.request({ method: "eth_accounts" });
-
+            if (!ethereum) return;
+            const accounts = await ethereum.request({ method: 'eth_accounts' });
             if (accounts.length) {
                 setCurrentAccount(accounts[0]);
-            } else {
-                console.log("Nessun account trovato");
             }
-        } catch (error) {
-            console.log(error);
-            throw new Error("Nessun oggetto ethereum trovato");
-        }
+        } catch (error) { console.log(error); }
     }
 
     const fetchCampaigns = async () => {
@@ -77,6 +74,8 @@ export const Web3Provider = ({ children }) => {
                 amountCollected: ethers.utils.formatEther(campaign.amountCollected.toString()),
                 image: campaign.image,
                 donators: campaign.donators.map(d => d.toLowerCase()),
+                donations: campaign.donations.map(d => ethers.utils.formatEther(d.toString())),
+                claimed: campaign.claimed,
                 pId: i
             }));
 
@@ -144,6 +143,20 @@ export const Web3Provider = ({ children }) => {
         setIsLoading(false);
     }
 
+    useEffect(() => {
+        if (window.ethereum) {
+            window.ethereum.on('accountsChanged', (accounts) => {
+                if(accounts.length > 0) {
+                    setCurrentAccount(accounts[0]);
+                    localStorage.setItem('connected', 'true');
+                } else {
+                    disconnectWallet();
+                }
+            });
+        }
+        checkIfWalletIsConnected();
+    }, []);
+
     return (
         <Web3Context.Provider value={{ 
             connectWallet, 
@@ -155,7 +168,8 @@ export const Web3Provider = ({ children }) => {
             withdraw,
             refund,
             getEthereumContract,
-            currentTimestamp
+            currentTimestamp,
+            disconnectWallet
         }}>
             {children}
         </Web3Context.Provider>

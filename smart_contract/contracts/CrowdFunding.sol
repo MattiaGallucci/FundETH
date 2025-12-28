@@ -12,6 +12,7 @@ contract CrowdFunding {
         string image;
         address[] donators;
         uint256[] donations;
+        bool claimed;
     }
 
     mapping(uint256 => Campaign) public campaigns;
@@ -41,6 +42,7 @@ contract CrowdFunding {
         campaign.deadline = _deadline;
         campaign.amountCollected = 0;
         campaign.image = _image;
+        campaign.claimed = false;
 
         numberOfCampaigns++;
 
@@ -69,31 +71,45 @@ contract CrowdFunding {
     function withdrawFunds(uint256 _id) public {
         Campaign storage campaign = campaigns[_id];
 
-        require(msg.sender == campaign.owner, "Solo il creatore puo' prelevare");
+        require(msg.sender == campaign.owner, "Solo il creatore puo prelevare");
         require(campaign.amountCollected >= campaign.target, "Target non raggiunto");
-        require(campaign.amountCollected > 0, "Nessun fondo da prelevare");
+        require(!campaign.claimed, "Fondi gia' prelevati");
 
-        // Aggiorniamo stato prima di inviare soldi per evitare reentrancy attack
-        uint256 amountToWithdraw = campaign.amountCollected;
-        campaign.amountCollected = 0;
-        (bool sent, ) = payable(campaign.owner).call{value: amountToWithdraw}("");
-        require(sent, "Trasferimento fallito");
-    }
+        campaign.claimed = true;
+
+        // Inviamo tutto quello che è stato raccolto
+        (bool sent, ) = payable(campaign.owner).call{value: campaign.amountCollected}("");
+        require(sent, "Fallito l'invio di Ether");
+}
 
     // Pull Over Push && Check-Effects-Interactions
     function refund(uint256 _id) public {
         Campaign storage campaign = campaigns[_id];
 
-        require(block.timestamp > campaign.deadline, "La campagna non e' ancora chiusa");
-        require(campaign.amountCollected < campaign.target, "Il target e' stato raggiunto, niente rimborsi");
+        require(block.timestamp > campaign.deadline, "La campagna non e' ancora scaduta");
+        require(campaign.amountCollected < campaign.target, "Il target e' stato raggiunto, impossibile rimborsare");
 
-        uint256 donatedAmount = campaignDonations[_id][msg.sender];
-        require(donatedAmount > 0, "Non hai donazioni da rimborsare");
+        uint256 donatedAmount = 0;
 
-        // Aggiorniamo stato prima di inviare soldi per evitare reentrancy attack
-        campaignDonations[_id][msg.sender] = 0;
+        // Cerchiamo quanto ha donato l'utente
+        for(uint i = 0; i < campaign.donators.length; i++) {
+            if(campaign.donators[i] == msg.sender) {
+                donatedAmount = campaign.donations[i];
+                
+                campaign.donations[i] = 0; 
+                
+                break;
+            }
+        }
+
+        require(donatedAmount > 0, "Nessuna donazione da rimborsare o gia' rimborsato");
+
+        // Aggiorniamo il totale raccolto (opzionale ma consigliato per pulizia)
+        campaign.amountCollected = campaign.amountCollected - donatedAmount;
+
+        // Inviamo il rimborso
         (bool sent, ) = payable(msg.sender).call{value: donatedAmount}("");
-        require(sent, "Rimborso fallito");
+        require(sent, "Fallito l'invio del rimborso");
     }
 
     constructor() {
