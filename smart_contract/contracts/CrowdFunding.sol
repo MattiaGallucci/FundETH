@@ -22,6 +22,7 @@ contract CrowdFunding {
 
     uint256 public numberOfCampaigns = 0;
 
+    //Guard Check
     function createCampaign(
         address _owner,
         string memory _title,
@@ -30,7 +31,7 @@ contract CrowdFunding {
         uint256 _deadline,
         string memory _image
     ) public returns (uint256) {
-        // GuardCheck
+        
         require(_deadline > block.timestamp, "La scadenza deve essere nel futuro");
         
         Campaign storage campaign = campaigns[numberOfCampaigns];
@@ -49,11 +50,11 @@ contract CrowdFunding {
         return numberOfCampaigns - 1;
     }
 
+    //Guard Check
     function donateToCampaign(uint256 _id) public payable {
         uint256 amount = msg.value;
         Campaign storage campaign = campaigns[_id];
 
-        // GuardCheck
         require(block.timestamp < campaign.deadline, "La campagna e' scaduta");
 
         campaign.amountCollected = campaign.amountCollected + amount;
@@ -67,7 +68,7 @@ contract CrowdFunding {
         return (campaigns[_id].donators, campaigns[_id].donations);
     }
 
-    // Check-Effects-Interactions
+    //Guard Check, Checks-Effects-Interactions
     function withdrawFunds(uint256 _id) public {
         Campaign storage campaign = campaigns[_id];
 
@@ -82,7 +83,7 @@ contract CrowdFunding {
         require(sent, "Fallito l'invio di Ether");
 }
 
-    // Pull Over Push && Check-Effects-Interactions
+    //Guard Check, Checks-Effects-Interactions, Pull over Push
     function refund(uint256 _id) public {
         Campaign storage campaign = campaigns[_id];
 
