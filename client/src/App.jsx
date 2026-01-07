@@ -3,6 +3,7 @@ import { Web3Context } from './context/Web3Context';
 import CreateCampaign from './CreateCampaign';
 import FundModal from './FundModal';
 import './App.css';
+import logo from './assets/FundETH_logo.png';
 
 const App = () => {
   const { connectWallet, currentAccount, campaigns, isLoading, withdraw, refund, currentTimestamp, disconnectWallet } = useContext(Web3Context);
@@ -15,7 +16,14 @@ const App = () => {
 
       {/* Navbar */}
       <nav className="navbar">
-        <div className="logo">CryptoFund</div>
+        <div className="logo" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+    <img 
+      src={logo} 
+      alt="FundETH Logo" 
+      style={{ height: '100px', width: 'auto' }} // Regola l'altezza a piacimento
+    />
+    <span>FundETH</span>
+  </div>
         {!currentAccount ? (
           <button onClick={connectWallet} className="btn btn-primary">Connetti Wallet</button>
         ) : (

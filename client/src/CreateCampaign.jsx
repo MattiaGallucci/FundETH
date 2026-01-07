@@ -15,6 +15,7 @@ const CreateCampaign = () => {
     });
 
     const [imageFile, setImageFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
 
     const uploadToPinata = async (file) => {
@@ -59,7 +60,17 @@ const CreateCampaign = () => {
     };
 
     const handleImageChange = (e) => {
-        setImageFile(e.target.files[0]);
+        const file = e.target.files[0];
+        if (file) {
+            setImageFile(file);
+            const previewUrl = URL.createObjectURL(file);
+            setImagePreview(previewUrl);
+        }
+    };
+
+    const removeImage = () => {
+        setImageFile(null);
+        setImagePreview(null);
     };
 
     const handleSubmit = async (e) => {
@@ -91,6 +102,8 @@ const CreateCampaign = () => {
 
             await transactin.wait();
             alert("Campagna creata con successo!");
+            setForm({ title: '', description: '', target: '', deadline: '', image: '' });
+            removeImage();
             setIsLoading(false);
         } catch (error) {
             console.error("Errore creazione campagna:", error);
@@ -125,7 +138,47 @@ const CreateCampaign = () => {
             </div>
             <div className="input-group">
                 <label>Copertina</label>
-                <input className="form-input" type="file" accept="image/*" onChange={handleImageChange} required />
+                
+                {/* Se c'è l'anteprima, mostra l'immagine, altrimenti mostra l'input file */}
+                {imagePreview ? (
+                    <div style={{ position: 'relative', width: '100%', height: '150px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #d1d5db' }}>
+                        <img 
+                            src={imagePreview} 
+                            alt="Anteprima" 
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                        />
+                        <button 
+                            type="button" 
+                            onClick={removeImage}
+                            style={{
+                                position: 'absolute',
+                                top: '5px',
+                                right: '5px',
+                                background: 'rgba(0,0,0,0.6)',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '50%',
+                                width: '25px',
+                                height: '25px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}
+                        >
+                            ✕
+                        </button>
+                    </div>
+                ) : (
+                    <input 
+                        className="form-input" 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handleImageChange} 
+                        required 
+                        style={{ padding: '10px' }}
+                    />
+                )}
             </div>
         </div>
 
