@@ -1,4 +1,4 @@
-# 🦄 FundETH - Decentralized Crowdfunding DApp
+# FundETH - Decentralized Crowdfunding DApp
 
 FundETH è una piattaforma di crowdfunding decentralizzata basata su Blockchain Ethereum. Permette agli utenti di creare campagne di raccolta fondi, effettuare donazioni in Ether e gestire il rilascio dei fondi in modo completamente trasparente e sicuro (trustless) tramite Smart Contract.
 
@@ -211,3 +211,4 @@ Progetto sviluppato per il corso di Sicurezza dei Dati
 
 - Nome: Mattia Gallucci  
 - Matricola: NF22500127
+
