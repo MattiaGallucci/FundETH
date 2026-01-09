@@ -24,14 +24,14 @@ Il sistema garantisce che i fondi vengano rilasciati al creatore solo se l'obiet
 
 ## 🚀 Caratteristiche Principali
 
-- Creazione Campagne: chiunque può lanciare una campagna impostando titolo, descrizione, target (ETH), scadenza e immagine di copertina.  
-- Storage Decentralizzato: le immagini delle campagne sono salvate su IPFS (via Pinata) per ridurre i costi di gas.  
-- Sistema di Escrow: i fondi donati restano bloccati nello Smart Contract fino alla conclusione della campagna.  
-- Prelievo Condizionato: il creatore può prelevare i fondi solo se:
+- **Creazione Campagne**: chiunque può lanciare una campagna impostando titolo, descrizione, target (ETH), scadenza e immagine di copertina.  
+- **Storage Decentralizzato**: le immagini delle campagne sono salvate su IPFS (via Pinata) per ridurre i costi di gas.  
+- **Sistema di Escrow**: i fondi donati restano bloccati nello Smart Contract fino alla conclusione della campagna.  
+- **Prelievo Condizionato**: il creatore può prelevare i fondi solo se:
   - il target è stato raggiunto, e
   - il richiedente è il proprietario della campagna.  
-- Rimborso Garantito: se la campagna scade senza raggiungere il target, i donatori possono richiedere indietro i propri ETH.  
-- Interfaccia Web3: connessione tramite MetaMask, dashboard interattiva con barra di progresso e stato in tempo reale.
+- **Rimborso Garantito**: se la campagna scade senza raggiungere il target, i donatori possono richiedere indietro i propri ETH.  
+- **Interfaccia Web3**: connessione tramite MetaMask, dashboard interattiva con barra di progresso e stato in tempo reale.
 
 ---
 
@@ -169,39 +169,15 @@ MetaMask:
 
 ---
 
-## ⏳ Testing e Time Travel
-
-Per eseguire test unitari degli smart contract:
-
-```bash
-cd smart_contract
-npx hardhat test
-```
-
-Per simulare il passare del tempo (utile per scadenze campagne) è disponibile uno script di time travel (se presente):
-
-```bash
-# esempio: avanzare di 30 giorni
-npx hardhat run scripts/timeTravel.js --network localhost
-```
-
-Dopo l'esecuzione, ricarica l'interfaccia: le campagne potrebbero risultare scadute e abilitare funzioni come "Richiedi Rimborso" o "Preleva" in base allo stato.
-
----
-
 ## 🔒 Sicurezza e Design Pattern
 
 Lo Smart Contract `CrowdFunding.sol` applica i seguenti pattern e buone pratiche:
 
-- Checks-Effects-Interactions: lo stato viene aggiornato (es. azzeramento saldo) prima di effettuare transfer esterni per prevenire reentrancy.  
-- Require Guards: validazioni con `require()` per input e stati (es. non donare a campagne scadute).  
-- Pull over Push: rimborsi e prelievi sono "pull" (l'utente richiede i fondi) per evitare problemi DoS.  
-- Limitazioni degli accessi: solo il proprietario della campagna può eseguire prelievi condizionati.  
+- **Checks-Effects-Interactions**: lo stato viene aggiornato (es. azzeramento saldo) prima di effettuare transfer esterni per prevenire reentrancy.  
+- **Guard Check**: validazioni con `require()` per input e stati (es. non donare a campagne scadute).  
+- **Pull over Push**: rimborsi e prelievi sono "pull" (l'utente richiede i fondi) per evitare problemi DoS.  
+- **Limitazioni degli accessi**: solo il proprietario della campagna può eseguire prelievi condizionati.  
 - Uso di tipi e overflow-checks forniti da Solidity >=0.8.x.
-
-Consigli aggiuntivi:
-- Considera l'aggiunta di un mutex (o `ReentrancyGuard`) per ulteriori protezioni.  
-- Usare test automatici approfonditi per casi limite e possibili attacchi (reentrancy, overflow/underflow, front-running).
 
 ---
 
@@ -211,4 +187,5 @@ Progetto sviluppato per il corso di Sicurezza dei Dati
 
 - Nome: Mattia Gallucci  
 - Matricola: NF22500127
+
 
